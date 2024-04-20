@@ -86,23 +86,5 @@ def query_database(db_path, query):
     # Close the connection
     conn.close()
 
-# Main Streamlit app
-def aaa():
-    st.title("SQLite Database Viewer")
 
-    # File uploader to select the database file
-    uploaded_file = st.file_uploader("Upload a SQLite database file", type=["db"])
-
-    if uploaded_file is not None:
-        # Display file details
-        st.write("File details:")
-        st.write({"filename": uploaded_file.name, "filetype": uploaded_file.type, "size": uploaded_file.size})
-
-        # Display query input field
-        query = st.text_input("Enter your SQL query:")
-        if st.button("Run Query"):
-            if query.strip() != "":
-                query_database(uploaded_file, query)
-            else:
-                st.warning("Please enter a valid SQL query.")
-st.write(aaa)
+query_database(db_path, query)
