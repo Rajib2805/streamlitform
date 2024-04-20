@@ -66,25 +66,3 @@ if __name__ == "__main__":
 
 
 
-# Function to query the database and display results
-def query_database(db_path, query):
-    # Connect to the database
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    # Execute the query
-    cursor.execute(query)
-    results = cursor.fetchall()
-
-    # Display results
-    if results:
-        for row in results:
-            st.write(row)
-    else:
-        st.write("No results found.")
-
-    # Close the connection
-    conn.close()
-
-
-query_database(db_path, query)
