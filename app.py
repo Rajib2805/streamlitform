@@ -1,68 +1,70 @@
-import streamlit as st
 import sqlite3
+import pandas as pd
+import streamlit as st
+import matplotlib.pyplot as plt
 
-# Create or connect to the SQLite database
-conn = sqlite3.connect('userdata.db')
-c = conn.cursor()
-
-# Create table if not exists
-c.execute('''CREATE TABLE IF NOT EXISTS users
-             (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, dob DATE, email TEXT)''')
-conn.commit()
-
-# Function to add user data to the database
-def add_user(name, dob, email):
-    c.execute("INSERT INTO users (name, dob, email) VALUES (?, ?, ?)", (name, dob, email))
+# Function to create database table if not exists
+def create_table():
+    conn = sqlite3.connect('student_data.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS students
+                 (id INTEGER PRIMARY KEY, name TEXT, dob TEXT, marks INTEGER, phone TEXT)''')
     conn.commit()
+    conn.close()
 
-# Function to update user data in the database
-def update_user(user_id, name, dob, email):
-    c.execute("UPDATE users SET name=?, dob=?, email=? WHERE id=?", (name, dob, email, user_id))
+# Function to insert data into the database
+def insert_data(name, dob, marks, phone):
+    conn = sqlite3.connect('student_data.db')
+    c = conn.cursor()
+    c.execute('''INSERT INTO students (name, dob, marks, phone) VALUES (?, ?, ?, ?)''', (name, dob, marks, phone))
     conn.commit()
+    conn.close()
 
-# Function to delete user data from the database
-def delete_user(user_id):
-    c.execute("DELETE FROM users WHERE id=?", (user_id,))
-    conn.commit()
+# Function to fetch all data from the database
+def fetch_data():
+    conn = sqlite3.connect('student_data.db')
+    df = pd.read_sql_query("SELECT * FROM students", conn)
+    conn.close()
+    return df
 
-# Function to retrieve all user data from the database
-def get_all_users():
-    c.execute("SELECT * FROM users")
-    return c.fetchall()
-
-# Streamlit app
+# Main Streamlit app
 def main():
-    st.title("User Management App")
+    create_table()
+    st.title("Student Database Management System")
 
-    # Form to add or update user data
-    st.subheader("Add or Update User")
-    name = st.text_input("Name")
-    dob = st.date_input("Date of Birth")
-    email = st.text_input("Email")
+    # Input fields for adding new student data
+    name = st.text_input("Enter Name:")
+    dob = st.date_input("Enter Date of Birth:")
+    marks = st.number_input("Enter Marks Obtained:")
+    phone = st.text_input("Enter Phone Number:")
 
-    add_update_button = st.button("Add/Update User")
+    if st.button("Add Student"):
+        insert_data(name, dob, marks, phone)
+        st.success("Student added successfully!")
 
-    if add_update_button:
-        add_user(name, dob, email)
-        st.success("User added/updated successfully!")
+    # Display current student data
+    st.subheader("Current Student Data:")
+    df = fetch_data()
+    st.dataframe(df)
 
-    # Display all users
-    st.subheader("All Users")
-    users = get_all_users()
-    for user in users:
-        st.write(f"ID: {user[0]}, Name: {user[1]}, DOB: {user[2]}, Email: {user[3]}")
+    # Data querying
+    st.subheader("Query Student Data:")
+    query = st.text_input("Enter SQL Query:")
+    if st.button("Run Query"):
+        conn = sqlite3.connect('student_data.db')
+        queried_df = pd.read_sql_query(query, conn)
+        conn.close()
+        st.dataframe(queried_df)
 
-    # Form to delete user data
-    st.subheader("Delete User")
-    user_id_to_delete = st.number_input("Enter User ID to delete")
-    delete_button = st.button("Delete User")
-
-    if delete_button:
-        delete_user(user_id_to_delete)
-        st.success("User deleted successfully!")
+    # Bar plot of marks obtained by students
+    st.subheader("Bar Plot of Marks Obtained:")
+    marks_df = df[['name', 'marks']]
+    plt.figure(figsize=(10, 6))
+    plt.bar(marks_df['name'], marks_df['marks'])
+    plt.xlabel('Student Name')
+    plt.ylabel('Marks Obtained')
+    plt.xticks(rotation=45)
+    st.pyplot(plt)
 
 if __name__ == "__main__":
     main()
-
-
-
