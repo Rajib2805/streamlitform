@@ -105,3 +105,4 @@ def aaa():
                 query_database(uploaded_file, query)
             else:
                 st.warning("Please enter a valid SQL query.")
+st.write(aaa)
