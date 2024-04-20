@@ -87,7 +87,7 @@ def query_database(db_path, query):
     conn.close()
 
 # Main Streamlit app
-def main():
+def aaa():
     st.title("SQLite Database Viewer")
 
     # File uploader to select the database file
